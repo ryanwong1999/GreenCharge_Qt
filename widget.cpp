@@ -1,15 +1,26 @@
 #include "widget.h"
 #include "ui_widget.h"
 
+bool connect_flag = false;
+bool receive_flag = false;
+int connect_cnt = 0;
+
 widget::widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::widget)
 {
     ui->setupUi(this);
-    this->setProperty("canMove",true);
+    this->setProperty("canMove", true);
     this->setWindowTitle("电源管理");
     this->initUi();
     this->scan_serial();
+
+    //初始化定时器
+    timer1 = new QTimer(this);
+    //连接定时器
+    connect(timer1,SIGNAL(timeout()),this,SLOT(GetStatus1()));
+    //开始倒计时
+    timer1->start(1100);
 }
 
 widget::~widget()
@@ -38,6 +49,26 @@ void widget::initUi()
     ui->horizontalLayout_3->setMargin(12);
 }
 
+void widget::GetStatus1()
+{
+    qDebug() << "进入GetStatus1";
+    if(connect_flag)
+    {
+        if(!receive_flag)
+        {
+            connect_cnt++;
+            //如果没有收到单片机发过来的数据则显示连接失败
+            if(connect_cnt > 3) ui->label_state->setText("连接失败");
+        }
+        else
+        {
+            ui->label_state->setText("连接成功");
+            connect_cnt = 0;
+        }
+    }
+    else connect_cnt = 0;
+}
+
 void widget::scan_serial()
 {
     ui->comboBox_serial->clear();
@@ -51,11 +82,31 @@ void widget::scan_serial()
 //读取接收到的数据
 void widget::Read_Data()
 {
-    QByteArray buf;
-    buf = serial->readAll();
-    qDebug() << buf;
+    receive_flag = true;
+    QByteArray buf = serial->readAll();
+    qDebug() << "buf:" << buf;
+    //处理收到的数据
+    get_data(buf);
 }
 
+//处理收到的数据
+//0x55  0xAA  0x21    0x14 cmd data 0x0D 0x0A
+//HEAD1 HEAD2 address Len  cmd data end1 end2
+void widget::get_data(const QByteArray &data)
+{
+    bool bStatus = false;
+    if(data.toHex().mid(0,2) == "55" && data.toHex().mid(2,2) == "aa")
+    {
+        int len = data.toHex().mid(4,2).toInt(&bStatus,16);
+        if(data.toHex().mid(len*2-4,2) == "0d" && data.toHex().mid(len*2-2,2) == "0a")
+        {
+            qDebug() << "收到的数据:" << data;
+
+        }
+    }
+}
+
+//点击连接按钮
 void widget::on_pushButton_connect_clicked()
 {
     QString name = ui->pushButton_connect->text();//获取按钮上的文字
@@ -77,7 +128,9 @@ void widget::on_pushButton_connect_clicked()
         serial->setStopBits(QSerialPort::OneStop);//1位停止位
         serial->setFlowControl(QSerialPort::NoFlowControl);//无硬件控制
         ui->comboBox_serial->setDisabled(true);//串口号下拉列表变灰
-        ui->label_state->setText("连接成功");
+//        ui->label_state->setText("连接成功");
+        ui->pushButton_connect->setStyleSheet("background-color: #00C5CD;" "color: #FFFFFF;");
+        connect_flag = true;
         qDebug() << "打开串口";
         //连接信号槽
         QObject::connect(serial, &QSerialPort::readyRead, this, &widget::Read_Data);
@@ -88,16 +141,51 @@ void widget::on_pushButton_connect_clicked()
         ui->comboBox_serial->setEnabled(true);//串口号下拉列表变亮
         ui->pushButton_connect->setText(tr("打开串口"));
         ui->label_state->setText("连接断开");
+        ui->pushButton_connect->setStyleSheet("background-color: #f2f2f2;" "color: #000000;");
+        connect_flag = false;
+        receive_flag = false;
         qDebug() << "关闭串口";
     }
 }
 
+//点击串口下拉框 点击combobox刷新
+void widget::on_comboBox_serial_mouseSingleClickd()
+{
+    //刷新串口
+    scan_serial();
+}
+
+//SET_VOL_CUR  0x10
+//SET_MODE     0x11
+//CMD_CHG      0x20
+//点击设置按钮
 void widget::on_pushButton_set_clicked()
 {
 
 }
 
+//点击关闭按钮
 void widget::on_pushButton_close_clicked()
 {
 
+}
+
+// CRC16校验函数（Modbus算法）
+bool checkCRC(QByteArray data)
+{
+    unsigned int length = data.length();
+    unsigned int crc = 0xFFFF;
+
+    for (unsigned int i = 0; i < length; i++) {
+        crc ^= (unsigned char)data[i];
+
+        for (int j = 0; j < 8; j++) {
+            if (crc & 0x0001) {
+                crc = (crc >> 1) ^ 0xA001;
+            } else {
+                crc = crc >> 1;
+            }
+        }
+    }
+    return (crc == 0);
 }

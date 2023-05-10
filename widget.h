@@ -10,6 +10,7 @@
 #include <QtSerialPort/QSerialPortInfo>     // 提供系统中存在的串口信息
 #include <QMessageBox>
 #include <QDebug>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class widget; }
@@ -24,9 +25,12 @@ public:
     ~widget();
     void initUi();
     void scan_serial();
+    void get_data(const QByteArray &data);
 
 private slots:
     void Read_Data();
+    void on_comboBox_serial_mouseSingleClickd();
+    void GetStatus1();
     void on_pushButton_connect_clicked();
     void on_pushButton_set_clicked();
     void on_pushButton_close_clicked();
@@ -34,5 +38,6 @@ private slots:
 private:
     Ui::widget *ui;
     QSerialPort *serial;
+    QTimer *timer1;
 };
 #endif // WIDGET_H
