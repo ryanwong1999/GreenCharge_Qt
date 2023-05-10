@@ -44,7 +44,7 @@ void widget::scan_serial()
     QList<QSerialPortInfo> list  = QSerialPortInfo::availablePorts();
     foreach (const QSerialPortInfo &info, list)
     {
-            ui->comboBox_serial->addItem(info.portName());
+        ui->comboBox_serial->addItem(info.portName());
     }
 }
 
@@ -79,7 +79,6 @@ void widget::on_pushButton_connect_clicked()
         ui->comboBox_serial->setDisabled(true);//串口号下拉列表变灰
         ui->label_state->setText("连接成功");
         qDebug() << "打开串口";
-
         //连接信号槽
         QObject::connect(serial, &QSerialPort::readyRead, this, &widget::Read_Data);
     }
