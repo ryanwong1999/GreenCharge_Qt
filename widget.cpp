@@ -13,12 +13,12 @@ widget::widget(QWidget *parent)
     this->setProperty("canMove", true);
     this->setWindowTitle("电源管理");
     this->initUi();
-    this->scan_serial();
+    this->scanSerial();
 
     //初始化定时器
     timer1 = new QTimer(this);
     //连接定时器
-    connect(timer1,SIGNAL(timeout()),this,SLOT(GetStatus1()));
+    connect(timer1,SIGNAL(timeout()),this,SLOT(getStatus()));
     //开始倒计时
     timer1->start(1100);
 }
@@ -49,7 +49,7 @@ void widget::initUi()
     ui->horizontalLayout_3->setMargin(12);
 }
 
-void widget::GetStatus1()
+void widget::getStatus()
 {
     qDebug() << "进入GetStatus1";
     if(connect_flag)
@@ -69,7 +69,7 @@ void widget::GetStatus1()
     else connect_cnt = 0;
 }
 
-void widget::scan_serial()
+void widget::scanSerial()
 {
     ui->comboBox_serial->clear();
     QList<QSerialPortInfo> list  = QSerialPortInfo::availablePorts();
@@ -80,19 +80,19 @@ void widget::scan_serial()
 }
 
 //读取接收到的数据
-void widget::Read_Data()
+void widget::readData()
 {
     receive_flag = true;
     QByteArray buf = serial->readAll();
     qDebug() << "buf:" << buf;
     //处理收到的数据
-    get_data(buf);
+    getData(buf);
 }
 
 //处理收到的数据
 //0x55  0xAA  0x21    0x14 cmd data 0x0D 0x0A
 //HEAD1 HEAD2 address Len  cmd data end1 end2
-void widget::get_data(const QByteArray &data)
+void widget::getData(const QByteArray &data)
 {
     bool bStatus = false;
     if(data.toHex().mid(0,2) == "55" && data.toHex().mid(2,2) == "aa")
@@ -101,7 +101,34 @@ void widget::get_data(const QByteArray &data)
         if(data.toHex().mid(len*2-4,2) == "0d" && data.toHex().mid(len*2-2,2) == "0a")
         {
             qDebug() << "收到的数据:" << data;
-
+            int cmd = data.toHex().mid(6,2).toInt(&bStatus,16);
+            switch (cmd) {
+            case 20:
+                //设置电压
+                float setV = data.toHex().mid(8,4).toInt(&bStatus,16);
+                ui->lineEdit_vol->setText(QString::number(setV/10));
+                //设置电流
+                float setA = data.toHex().mid(12,4).toInt(&bStatus,16);
+                ui->lineEdit_cur->setText(QString::number(setA/10));
+                //当前电压
+                float nowV = data.toHex().mid(16,4).toInt(&bStatus,16);
+                ui->lineEdit_cur->setText(QString::number(nowV/10));
+                //当前电流
+                float nowA = data.toHex().mid(20,4).toInt(&bStatus,16);
+                ui->lineEdit_cur->setText(QString::number(nowA/10));
+                //停止电流
+                float stopA = data.toHex().mid(24,2).toInt(&bStatus,16);
+                ui->lineEdit_cur->setText(QString::number(stopA/10));
+                //充电模式
+                int chargeType = data.toHex().mid(26,2).toInt(&bStatus,16);
+                if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(0);
+                else if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(1);
+                else if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(2);
+                else if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(3);
+                //充电状态
+                //电池容量
+                break;
+            }
         }
     }
 }
@@ -128,12 +155,11 @@ void widget::on_pushButton_connect_clicked()
         serial->setStopBits(QSerialPort::OneStop);//1位停止位
         serial->setFlowControl(QSerialPort::NoFlowControl);//无硬件控制
         ui->comboBox_serial->setDisabled(true);//串口号下拉列表变灰
-//        ui->label_state->setText("连接成功");
-        ui->pushButton_connect->setStyleSheet("background-color: #00C5CD;" "color: #FFFFFF;");
+        ui->pushButton_connect->setStyleSheet("background-color: #00C5CD;" "color: #FFFFFF;");//按键颜色改变
         connect_flag = true;
         qDebug() << "打开串口";
         //连接信号槽
-        QObject::connect(serial, &QSerialPort::readyRead, this, &widget::Read_Data);
+        QObject::connect(serial, &QSerialPort::readyRead, this, &widget::readData);
     }
     else
     {
@@ -152,7 +178,7 @@ void widget::on_pushButton_connect_clicked()
 void widget::on_comboBox_serial_mouseSingleClickd()
 {
     //刷新串口
-    scan_serial();
+    scanSerial();
 }
 
 //SET_VOL_CUR  0x10

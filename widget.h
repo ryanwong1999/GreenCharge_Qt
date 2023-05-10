@@ -24,13 +24,13 @@ public:
     widget(QWidget *parent = nullptr);
     ~widget();
     void initUi();
-    void scan_serial();
-    void get_data(const QByteArray &data);
+    void scanSerial();
+    void getData(const QByteArray &data);
 
 private slots:
-    void Read_Data();
+    void readData();
     void on_comboBox_serial_mouseSingleClickd();
-    void GetStatus1();
+    void getStatus();
     void on_pushButton_connect_clicked();
     void on_pushButton_set_clicked();
     void on_pushButton_close_clicked();
