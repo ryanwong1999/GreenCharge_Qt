@@ -178,27 +178,6 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="5">
-               <widget class="QLabel" name="label_stop_cur_now">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="4">
                <widget class="QLabel" name="label_a1">
                 <property name="font">
@@ -232,18 +211,6 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="6">
-               <widget class="QLabel" name="label_a4">
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>A</string>
                 </property>
                </widget>
               </item>
@@ -294,7 +261,7 @@
                </widget>
               </item>
               <item row="4" column="3">
-               <widget class="QLabel" name="label__cur_now">
+               <widget class="QLabel" name="label_cur_now">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>

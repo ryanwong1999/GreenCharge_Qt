@@ -4,6 +4,14 @@
 bool connect_flag = false;
 bool receive_flag = false;
 int connect_cnt = 0;
+int first_show = 0;
+int change_show = 0;
+int a = 0;
+QString ChargeType;
+
+QString SET_VOL_CUR = "10";
+QString SET_MODE = "11";
+QString CMD_CHG = "20";
 
 widget::widget(QWidget *parent)
     : QWidget(parent)
@@ -49,26 +57,6 @@ void widget::initUi()
     ui->horizontalLayout_3->setMargin(12);
 }
 
-void widget::getStatus()
-{
-    qDebug() << "进入GetStatus1";
-    if(connect_flag)
-    {
-        if(!receive_flag)
-        {
-            connect_cnt++;
-            //如果没有收到单片机发过来的数据则显示连接失败
-            if(connect_cnt > 3) ui->label_state->setText("连接失败");
-        }
-        else
-        {
-            ui->label_state->setText("连接成功");
-            connect_cnt = 0;
-        }
-    }
-    else connect_cnt = 0;
-}
-
 void widget::scanSerial()
 {
     ui->comboBox_serial->clear();
@@ -89,6 +77,13 @@ void widget::readData()
     getData(buf);
 }
 
+void widget::Send_Data(const QByteArray &data)
+{
+    qDebug() << "widget::Send_Data: " << data;
+    serial->write(data);
+//    serial->waitForBytesWritten(10);
+}
+
 //处理收到的数据
 //0x55  0xAA  0x21    0x14 cmd data 0x0D 0x0A
 //HEAD1 HEAD2 address Len  cmd data end1 end2
@@ -106,25 +101,31 @@ void widget::getData(const QByteArray &data)
             case 20:
                 //设置电压
                 float setV = data.toHex().mid(8,4).toInt(&bStatus,16);
-                ui->lineEdit_vol->setText(QString::number(setV/10));
                 //设置电流
                 float setA = data.toHex().mid(12,4).toInt(&bStatus,16);
-                ui->lineEdit_cur->setText(QString::number(setA/10));
                 //当前电压
                 float nowV = data.toHex().mid(16,4).toInt(&bStatus,16);
-                ui->lineEdit_cur->setText(QString::number(nowV/10));
                 //当前电流
                 float nowA = data.toHex().mid(20,4).toInt(&bStatus,16);
-                ui->lineEdit_cur->setText(QString::number(nowA/10));
-                //停止电流
+                //设置停止电流
                 float stopA = data.toHex().mid(24,2).toInt(&bStatus,16);
-                ui->lineEdit_cur->setText(QString::number(stopA/10));
                 //充电模式
                 int chargeType = data.toHex().mid(26,2).toInt(&bStatus,16);
-                if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(0);
-                else if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(1);
-                else if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(2);
-                else if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(3);
+                //改变ui显示
+                ui->label_vol_now->setText(QString::number(nowV/10));
+                ui->label_cur_now->setText(QString::number(nowA/10));
+                if(first_show == 0 || change_show == 1)
+                {
+                    ui->lineEdit_vol->setText(QString::number(setV/10));
+                    ui->lineEdit_cur->setText(QString::number(setA/10));
+                    ui->lineEdit_stop_cur->setText(QString::number(stopA/10));
+                    if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(0);
+                    else if(chargeType == 1) ui->comboBox_mode->setCurrentIndex(1);
+                    else if(chargeType == 2) ui->comboBox_mode->setCurrentIndex(2);
+                    else if(chargeType == 3) ui->comboBox_mode->setCurrentIndex(3);
+                    change_show = 0;
+                    first_show = 1;
+                }
                 //充电状态
                 //电池容量
                 break;
@@ -155,6 +156,7 @@ void widget::on_pushButton_connect_clicked()
         serial->setStopBits(QSerialPort::OneStop);//1位停止位
         serial->setFlowControl(QSerialPort::NoFlowControl);//无硬件控制
         ui->comboBox_serial->setDisabled(true);//串口号下拉列表变灰
+        ui->comboBox_serial->setStyleSheet("background-color: #F2F2F2;");//按键颜色改变
         ui->pushButton_connect->setStyleSheet("background-color: #00C5CD;" "color: #FFFFFF;");//按键颜色改变
         connect_flag = true;
         qDebug() << "打开串口";
@@ -165,11 +167,13 @@ void widget::on_pushButton_connect_clicked()
     {
         serial->close();//关闭串口
         ui->comboBox_serial->setEnabled(true);//串口号下拉列表变亮
+        ui->comboBox_serial->setStyleSheet("background-color: #FFFFFF;");//按键颜色改变
         ui->pushButton_connect->setText(tr("打开串口"));
-        ui->label_state->setText("连接断开");
+        ui->label_state->setText(tr("连接断开"));
         ui->pushButton_connect->setStyleSheet("background-color: #f2f2f2;" "color: #000000;");
         connect_flag = false;
         receive_flag = false;
+        first_show = 0;
         qDebug() << "关闭串口";
     }
 }
@@ -187,7 +191,37 @@ void widget::on_comboBox_serial_mouseSingleClickd()
 //点击设置按钮
 void widget::on_pushButton_set_clicked()
 {
+    //电池类型
+    switch(ui->comboBox_mode->currentIndex())
+    {
+      case 1: ChargeType = "00"; break;
+      case 2: ChargeType = "01"; break;
+      case 3: ChargeType = "02"; break;
+      case 4: ChargeType = "03"; break;
+    }
+    //设置电压
+    int setV = ui->lineEdit_vol->text().toFloat()*10;
+    QString SetV = QString("%1").arg(setV, 4, 16, QLatin1Char('0'));
+    //设置电流
+    int setA = ui->lineEdit_cur->text().toFloat()*10;
+    QString SetA = QString("%1").arg(setA, 4, 16, QLatin1Char('0'));
+    //停止电流
+    int stopA = ui->lineEdit_stop_cur->text().toFloat()*10;
+    QString StopA = QString("%1").arg(stopA, 4, 16, QLatin1Char('0'));
 
+    QString setVolCur = "";
+    QString setMode = "";
+
+    setVolCur = "55aa21" + SET_VOL_CUR + SetV + SetA + StopA;
+    setMode = "55aa21" + SET_MODE + "00" + ChargeType;
+
+    QByteArray sendVolCur = crc16Hex(setVolCur);
+    Send_Data(sendVolCur);
+    Delay_MSec(100);
+    QByteArray sendMode = crc16Hex(setVolCur);
+    Send_Data(sendMode);
+    Delay_MSec(100);
+    change_show = 1;
 }
 
 //点击关闭按钮
@@ -196,22 +230,59 @@ void widget::on_pushButton_close_clicked()
 
 }
 
-// CRC16校验函数（Modbus算法）
-bool checkCRC(QByteArray data)
+
+//定时器用于判断是否通讯成功
+void widget::getStatus()
 {
-    unsigned int length = data.length();
-    unsigned int crc = 0xFFFF;
-
-    for (unsigned int i = 0; i < length; i++) {
-        crc ^= (unsigned char)data[i];
-
-        for (int j = 0; j < 8; j++) {
-            if (crc & 0x0001) {
-                crc = (crc >> 1) ^ 0xA001;
-            } else {
-                crc = crc >> 1;
+    qDebug() << "进入GetStatus1";
+    if(connect_flag)
+    {
+        if(!receive_flag)
+        {
+            connect_cnt++;
+            //如果没有收到单片机发过来的数据则显示连接失败
+            if(connect_cnt > 3)
+            {
+                if(a == 0)
+                {
+                    ui->label_state->setText(tr("连接失败"));
+                    a = 1;
+                }
+                else if(a == 1)
+                {
+                    ui->label_state->setText(tr("       "));
+                    a = 0;
+                }
             }
         }
+        else
+        {
+            ui->label_state->setText(tr("连接成功"));
+            connect_cnt = 0;
+        }
     }
-    return (crc == 0);
+    else connect_cnt = 0;
+}
+
+//延时毫秒
+void widget::Delay_MSec(unsigned int msec)
+{
+    QEventLoop loop;//定义一个新的事件循环
+    QTimer::singleShot(msec, &loop, SLOT(quit()));//创建单次定时器，槽函数为事件循环的退出函数
+    loop.exec();//事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
+}
+
+//crc校验
+QByteArray widget::crc16Hex(QString originData)
+{
+    auto data = QByteArray::fromHex(originData.toLatin1());
+    auto crc16ForModbus = JQChecksum::crc16ForModbus( data );
+    QString n = QString::number( crc16ForModbus, 16 );
+    QString temp1 = n.mid(0, 2);
+    QString temp2 = n.mid(2, 2);
+    QString result = temp2 + temp1;
+    QString all = originData + result;
+    qDebug() << all;
+    QByteArray allData = QByteArray::fromHex(all.toLatin1());
+    return allData;
 }

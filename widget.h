@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QTimer>
+#include "JQChecksum.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class widget; }
@@ -26,6 +27,9 @@ public:
     void initUi();
     void scanSerial();
     void getData(const QByteArray &data);
+    void Delay_MSec(unsigned int);
+    void Send_Data(const QByteArray &data);
+    QByteArray crc16Hex(QString);
 
 private slots:
     void readData();
