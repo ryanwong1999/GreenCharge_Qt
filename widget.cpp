@@ -72,16 +72,16 @@ void widget::readData()
 {
     receive_flag = true;
     QByteArray buf = serial->readAll();
-    qDebug() << "buf:" << buf;
+//    qDebug() << "buf:" << buf;
     //处理收到的数据
     getData(buf);
 }
 
 void widget::Send_Data(const QByteArray &data)
 {
-    qDebug() << "widget::Send_Data: " << data;
+//    qDebug() << "Send_Data: " << data;
     serial->write(data);
-//    serial->waitForBytesWritten(10);
+    serial->waitForBytesWritten(10);
 }
 
 //处理收到的数据
@@ -90,27 +90,28 @@ void widget::Send_Data(const QByteArray &data)
 void widget::getData(const QByteArray &data)
 {
     bool bStatus = false;
+//    qDebug() << "data:" << data.toHex();
     if(data.toHex().mid(0,2) == "55" && data.toHex().mid(2,2) == "aa")
     {
-        int len = data.toHex().mid(4,2).toInt(&bStatus,16);
+        int len = data.toHex().mid(6,2).toInt(&bStatus,16);
         if(data.toHex().mid(len*2-4,2) == "0d" && data.toHex().mid(len*2-2,2) == "0a")
         {
-            qDebug() << "收到的数据:" << data;
-            int cmd = data.toHex().mid(6,2).toInt(&bStatus,16);
+//            qDebug() << "收到:" << data.toHex();
+            int cmd = data.toHex().mid(8,2).toInt(&bStatus,16);
             switch (cmd) {
-            case 20:
+            case 32:    //16进制20
                 //设置电压
-                float setV = data.toHex().mid(8,4).toInt(&bStatus,16);
+                float setV = data.toHex().mid(10,4).toInt(&bStatus,16);
                 //设置电流
-                float setA = data.toHex().mid(12,4).toInt(&bStatus,16);
+                float setA = data.toHex().mid(14,4).toInt(&bStatus,16);
                 //当前电压
-                float nowV = data.toHex().mid(16,4).toInt(&bStatus,16);
+                float nowV = data.toHex().mid(18,4).toInt(&bStatus,16);
                 //当前电流
-                float nowA = data.toHex().mid(20,4).toInt(&bStatus,16);
+                float nowA = data.toHex().mid(22,4).toInt(&bStatus,16);
                 //设置停止电流
-                float stopA = data.toHex().mid(24,2).toInt(&bStatus,16);
+                float stopA = data.toHex().mid(26,2).toInt(&bStatus,16);
                 //充电模式
-                int chargeType = data.toHex().mid(26,2).toInt(&bStatus,16);
+                int chargeType = data.toHex().mid(28,2).toInt(&bStatus,16);
                 //改变ui显示
                 ui->label_vol_now->setText(QString::number(nowV/10));
                 ui->label_cur_now->setText(QString::number(nowA/10));
@@ -150,7 +151,7 @@ void widget::on_pushButton_connect_clicked()
             return;
         }
         ui->pushButton_connect->setText(tr("关闭串口"));//改变按钮上的文字
-        serial->setBaudRate(QSerialPort::Baud9600);
+        serial->setBaudRate(QSerialPort::Baud115200);
         serial->setDataBits(QSerialPort::Data8);//8位数据位
         serial->setParity(QSerialPort::NoParity);//无检验
         serial->setStopBits(QSerialPort::OneStop);//1位停止位
@@ -185,6 +186,10 @@ void widget::on_comboBox_serial_mouseSingleClickd()
     scanSerial();
 }
 
+/*************************************************
+接收命令: 55  AA  11  10  10  00  00  00  00  00  00  00  00 00 0D  0A
+          head  adr len cmd voltage current cap tmp sta         ends
+**************************************************/
 //SET_VOL_CUR  0x10
 //SET_MODE     0x11
 //CMD_CHG      0x20
@@ -194,10 +199,10 @@ void widget::on_pushButton_set_clicked()
     //电池类型
     switch(ui->comboBox_mode->currentIndex())
     {
-      case 1: ChargeType = "00"; break;
-      case 2: ChargeType = "01"; break;
-      case 3: ChargeType = "02"; break;
-      case 4: ChargeType = "03"; break;
+      case 0: ChargeType = "00"; break;
+      case 1: ChargeType = "01"; break;
+      case 2: ChargeType = "02"; break;
+      case 3: ChargeType = "03"; break;
     }
     //设置电压
     int setV = ui->lineEdit_vol->text().toFloat()*10;
@@ -207,20 +212,19 @@ void widget::on_pushButton_set_clicked()
     QString SetA = QString("%1").arg(setA, 4, 16, QLatin1Char('0'));
     //停止电流
     int stopA = ui->lineEdit_stop_cur->text().toFloat()*10;
-    QString StopA = QString("%1").arg(stopA, 4, 16, QLatin1Char('0'));
+    QString StopA = QString("%1").arg(stopA, 2, 16, QLatin1Char('0'));
 
-    QString setVolCur = "";
-    QString setMode = "";
+    QString setVolCur = "55aa1110" + SET_VOL_CUR + SetV + SetA + "00" + StopA + "0000000d0a";
+    QString setMode = "55aa110a" + SET_MODE + "00" + ChargeType + "000d0a";
+    auto sendVolCur = QByteArray::fromHex(setVolCur.toLatin1());
+    auto sendMode = QByteArray::fromHex(setMode.toLatin1());
 
-    setVolCur = "55aa21" + SET_VOL_CUR + SetV + SetA + StopA;
-    setMode = "55aa21" + SET_MODE + "00" + ChargeType;
-
-    QByteArray sendVolCur = crc16Hex(setVolCur);
+    qDebug() <<"sendVolCur:"<< sendVolCur.toHex();
+    qDebug() <<"sendMode:"<< sendMode.toHex();
     Send_Data(sendVolCur);
     Delay_MSec(100);
-    QByteArray sendMode = crc16Hex(setVolCur);
     Send_Data(sendMode);
-    Delay_MSec(100);
+    Delay_MSec(500);
     change_show = 1;
 }
 
@@ -234,7 +238,7 @@ void widget::on_pushButton_close_clicked()
 //定时器用于判断是否通讯成功
 void widget::getStatus()
 {
-    qDebug() << "进入GetStatus1";
+//    qDebug() << "进入GetStatus1";
     if(connect_flag)
     {
         if(!receive_flag)
