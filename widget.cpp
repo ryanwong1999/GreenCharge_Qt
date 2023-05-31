@@ -28,7 +28,7 @@ widget::widget(QWidget *parent)
     //连接定时器
     connect(timer1,SIGNAL(timeout()),this,SLOT(getStatus()));
     //开始倒计时
-    timer1->start(1100);
+    timer1->start(500);
 }
 
 widget::~widget()
@@ -129,6 +129,7 @@ void widget::getData(const QByteArray &data)
                 }
                 //充电状态
                 //电池容量
+                //地址
                 break;
             }
         }
@@ -213,6 +214,7 @@ void widget::on_pushButton_set_clicked()
     //停止电流
     int stopA = ui->lineEdit_stop_cur->text().toFloat()*10;
     QString StopA = QString("%1").arg(stopA, 2, 16, QLatin1Char('0'));
+    //地址
 
     QString setVolCur = "55aa1110" + SET_VOL_CUR + SetV + SetA + "00" + StopA + "0000000d0a";
     QString setMode = "55aa110a" + SET_MODE + "00" + ChargeType + "000d0a";
@@ -245,7 +247,7 @@ void widget::getStatus()
         {
             connect_cnt++;
             //如果没有收到单片机发过来的数据则显示连接失败
-            if(connect_cnt > 3)
+            if(connect_cnt > 6)
             {
                 if(a == 0)
                 {
