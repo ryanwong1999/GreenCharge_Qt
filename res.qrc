@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>css/index.css</file>
-        <file>css/greenlogo.png</file>
         <file>css/logo.png</file>
+        <file>css/greenCharge.ico</file>
     </qresource>
 </RCC>

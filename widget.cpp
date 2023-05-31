@@ -28,7 +28,7 @@ widget::widget(QWidget *parent)
     //连接定时器
     connect(timer1,SIGNAL(timeout()),this,SLOT(getStatus()));
     //开始倒计时
-    timer1->start(1100);
+    timer1->start(500);
 }
 
 widget::~widget()
@@ -79,9 +79,13 @@ void widget::readData()
 
 void widget::Send_Data(const QByteArray &data)
 {
-//    qDebug() << "Send_Data: " << data;
-    serial->write(data);
-    serial->waitForBytesWritten(10);
+    if(connect_flag)
+    {
+
+//        qDebug() << "Send_Data: " << data;
+        serial->write(data);
+        serial->waitForBytesWritten(10);
+    }
 }
 
 //处理收到的数据
@@ -99,7 +103,7 @@ void widget::getData(const QByteArray &data)
 //            qDebug() << "收到:" << data.toHex();
             int cmd = data.toHex().mid(8,2).toInt(&bStatus,16);
             switch (cmd) {
-            case 32:    //16进制20
+            case 32:    //16进制的20
                 //设置电压
                 float setV = data.toHex().mid(10,4).toInt(&bStatus,16);
                 //设置电流
@@ -112,6 +116,10 @@ void widget::getData(const QByteArray &data)
                 float stopA = data.toHex().mid(26,2).toInt(&bStatus,16);
                 //充电模式
                 int chargeType = data.toHex().mid(28,2).toInt(&bStatus,16);
+                //充电状态
+                //电池容量
+                //地址
+                int addr = data.toHex().mid(34,2).toInt(&bStatus,16);
                 //改变ui显示
                 ui->label_vol_now->setText(QString::number(nowV/10));
                 ui->label_cur_now->setText(QString::number(nowA/10));
@@ -120,6 +128,7 @@ void widget::getData(const QByteArray &data)
                     ui->lineEdit_vol->setText(QString::number(setV/10));
                     ui->lineEdit_cur->setText(QString::number(setA/10));
                     ui->lineEdit_stop_cur->setText(QString::number(stopA/10));
+                    ui->lineEdit_addr->setText(QString::number(addr));
                     if(chargeType == 0) ui->comboBox_mode->setCurrentIndex(0);
                     else if(chargeType == 1) ui->comboBox_mode->setCurrentIndex(1);
                     else if(chargeType == 2) ui->comboBox_mode->setCurrentIndex(2);
@@ -127,8 +136,6 @@ void widget::getData(const QByteArray &data)
                     change_show = 0;
                     first_show = 1;
                 }
-                //充电状态
-                //电池容量
                 break;
             }
         }
@@ -213,8 +220,12 @@ void widget::on_pushButton_set_clicked()
     //停止电流
     int stopA = ui->lineEdit_stop_cur->text().toFloat()*10;
     QString StopA = QString("%1").arg(stopA, 2, 16, QLatin1Char('0'));
+    //地址
+    int addr = ui->lineEdit_addr->text().toInt();
+    if(addr > 65535) addr = 65535;  //最大值限制
+    QString Addr = QString("%1").arg(addr, 4, 16, QLatin1Char('0'));
 
-    QString setVolCur = "55aa1110" + SET_VOL_CUR + SetV + SetA + "00" + StopA + "0000000d0a";
+    QString setVolCur = "55aa1110" + SET_VOL_CUR + SetV + SetA + "00" + StopA + Addr + "000d0a";
     QString setMode = "55aa110a" + SET_MODE + "00" + ChargeType + "000d0a";
     auto sendVolCur = QByteArray::fromHex(setVolCur.toLatin1());
     auto sendMode = QByteArray::fromHex(setMode.toLatin1());
@@ -245,7 +256,7 @@ void widget::getStatus()
         {
             connect_cnt++;
             //如果没有收到单片机发过来的数据则显示连接失败
-            if(connect_cnt > 3)
+            if(connect_cnt > 6)
             {
                 if(a == 0)
                 {

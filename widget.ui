@@ -124,60 +124,6 @@
               <property name="bottomMargin">
                <number>0</number>
               </property>
-              <item row="3" column="0">
-               <spacer name="verticalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_set">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>设置：</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLabel" name="label_vol_now">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="4">
                <widget class="QLabel" name="label_a1">
                 <property name="font">
@@ -187,30 +133,6 @@
                 </property>
                 <property name="text">
                  <string>A   </string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="5">
-               <widget class="QLineEdit" name="lineEdit_stop_cur">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>150</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
@@ -237,8 +159,8 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="label_vol">
+              <item row="0" column="5">
+               <widget class="QLabel" name="label_stop_cur">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -253,7 +175,40 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>电压</string>
+                 <string>转灯电流</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="2">
+               <widget class="QLabel" name="label_v2">
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>V   </string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLabel" name="label_vol_now">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>0</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -305,26 +260,15 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="5">
-               <widget class="QLabel" name="label_stop_cur">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>30</height>
-                 </size>
-                </property>
+              <item row="2" column="2">
+               <widget class="QLabel" name="label_v">
                 <property name="font">
                  <font>
                   <pointsize>15</pointsize>
-                  <weight>75</weight>
-                  <bold>true</bold>
                  </font>
                 </property>
                 <property name="text">
-                 <string>转灯电流</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                 <string>V   </string>
                 </property>
                </widget>
               </item>
@@ -349,55 +293,6 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QLabel" name="label_v">
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>V   </string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="6">
-               <widget class="QLabel" name="label_a2">
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <spacer name="verticalSpacer_7">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="4" column="2">
-               <widget class="QLabel" name="label_v2">
-                <property name="font">
-                 <font>
-                  <pointsize>15</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>V   </string>
                 </property>
                </widget>
               </item>
@@ -430,6 +325,111 @@
                 </property>
                 <property name="text">
                  <string>当前：</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_vol">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>电压</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="5">
+               <widget class="QLineEdit" name="lineEdit_stop_cur">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>150</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <spacer name="verticalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="0">
+               <spacer name="verticalSpacer_7">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_set">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>设置：</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="6">
+               <widget class="QLabel" name="label_a2">
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>A</string>
                 </property>
                </widget>
               </item>
@@ -606,6 +606,27 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_addr">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="placeholderText">
+               <string>地址</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QComboBox" name="comboBox_mode">

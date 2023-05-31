@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QFont>
+#include <QIcon>
 
 int main(int argc, char *argv[])
 {
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
     AppInit::Instance()->start();
 
     widget w;
+    w.setWindowIcon(QIcon(":/css/greenCharge.ico"));
     w.show();
     return a.exec();
 }
