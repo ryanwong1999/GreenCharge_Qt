@@ -81,7 +81,6 @@ void widget::Send_Data(const QByteArray &data)
 {
     if(connect_flag)
     {
-
 //        qDebug() << "Send_Data: " << data;
         serial->write(data);
         serial->waitForBytesWritten(10);
@@ -291,13 +290,13 @@ void widget::Delay_MSec(unsigned int msec)
 QByteArray widget::crc16Hex(QString originData)
 {
     auto data = QByteArray::fromHex(originData.toLatin1());
-    auto crc16ForModbus = JQChecksum::crc16ForModbus( data );
-    QString n = QString::number( crc16ForModbus, 16 );
+    auto crc16ForModbus = JQChecksum::crc16ForModbus(data);
+    QString n = QString::number(crc16ForModbus, 16);
     QString temp1 = n.mid(0, 2);
     QString temp2 = n.mid(2, 2);
     QString result = temp2 + temp1;
     QString all = originData + result;
-    qDebug() << all;
+    qDebug() << "crc16Hex: " << all;
     QByteArray allData = QByteArray::fromHex(all.toLatin1());
     return allData;
 }

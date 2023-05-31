@@ -12,6 +12,7 @@ MyComboBox::~MyComboBox()
 
 }
 
+//点击这个combobox会触发clicked信号
 void MyComboBox::mousePressEvent(QMouseEvent *event)
 {
     if(event->button() == Qt::LeftButton)
