@@ -118,7 +118,7 @@ void widget::getData(const QByteArray &data)
                 //充电状态
                 //电池容量
                 //地址
-                int addr = data.toHex().mid(34,2).toInt(&bStatus,16);
+                int addr = data.toHex().mid(36,2).toInt(&bStatus,16);
                 //改变ui显示
                 ui->label_vol_now->setText(QString::number(nowV/10));
                 ui->label_cur_now->setText(QString::number(nowA/10));
